@@ -1094,9 +1094,9 @@ int rgw_s3_prepare_encrypt(struct req_state* s,
 
     /* Checking bucket attributes if SSE is enabled. Currently only supporting SSE-S3 */
     rgw::sal::Attrs buck_attrs(s->bucket_attrs);
-    auto aiter = buck_attrs.find(RGW_ATTR_BUCKET_ENCRYPTION);
+    auto aiter = buck_attrs.find(RGW_ATTR_BUCKET_ENCRYPTION_POLICY);
     if (aiter != buck_attrs.end()) {
-      ldpp_dout(s, 5) << "Found RGW_ATTR_BUCKET_ENCRYPTION attr bucket_name: "
+      ldpp_dout(s, 5) << "Found RGW_ATTR_BUCKET_ENCRYPTION_POLICY on "
 	      << s->bucket_name << dendl;
 
       bufferlist::const_iterator iter{&aiter->second};
@@ -1112,7 +1112,7 @@ int rgw_s3_prepare_encrypt(struct req_state* s,
 	    return res;
 
 	  /* Find the KEK ID */
-	  auto kek_iter = buck_attrs.find(RGW_ATTR_BUCKET_ENCRYPTION_SSE_S3_KEY_ID);
+	  auto kek_iter = buck_attrs.find(RGW_ATTR_BUCKET_ENCRYPTION_KEY_ID);
 	  if (kek_iter == buck_attrs.end()) {
 	    ldpp_dout(s, 5) << "ERROR: KEK ID absent for bucket having "
 		    "encryption enabled" << dendl;
