@@ -8552,6 +8552,20 @@ void RGWPutBucketEncryption::execute(optional_yield y)
     return;
   }
 
+  if(bucket_encryption_conf.kms_master_key_id().compare("") != 0) {
+    ldpp_dout(this, 5) << "encryption not supported with sse-kms" << dendl;
+    op_ret = -ERR_NOT_IMPLEMENTED;
+    s->err.message = "SSE-KMS support is not provided";
+    return;
+  }
+
+  if(bucket_encryption_conf.sse_algorithm().compare("AES256") != 0) {
+    ldpp_dout(this, 5) << "only aes256 algorithm is supported for encryption" << dendl;
+    op_ret = -ERR_NOT_IMPLEMENTED;
+    s->err.message = "Encryption is supported only with AES256 algorithm";
+    return;
+  }
+
   op_ret = store->forward_request_to_master(this, s->user.get(), nullptr, data, nullptr, s->info, y);
   if (op_ret < 0) {
     ldpp_dout(this, 20) << "forward_request_to_master returned ret=" << op_ret << dendl;
@@ -8582,10 +8596,12 @@ int RGWGetBucketEncryption::verify_permission(optional_yield y)
 
 void RGWGetBucketEncryption::execute(optional_yield y)
 {
-  auto aiter = s->bucket_attrs.find(RGW_ATTR_BUCKET_ENCRYPTION_POLICY);
-  if (aiter == s->bucket_attrs.end()) {
+  const auto& attrs = s->bucket_attrs;
+  if (auto aiter = attrs.find(RGW_ATTR_BUCKET_ENCRYPTION_POLICY);
+      aiter == attrs.end()) {
     ldpp_dout(this, 0) << "can't find BUCKET ENCRYPTION attr for bucket_name = " << s->bucket_name << dendl;
     op_ret = -ENOENT;
+    s->err.message = "The server side encryption configuration was not found";
     return;
   } else {
     bufferlist::const_iterator iter{&aiter->second};

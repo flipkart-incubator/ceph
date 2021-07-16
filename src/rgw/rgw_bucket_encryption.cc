@@ -6,13 +6,7 @@
 
 void ApplyServerSideEncryptionByDefault::decode_xml(XMLObj *obj) {
   RGWXMLDecoder::decode_xml("KMSMasterKeyID", kmsMasterKeyID, obj, false);
-  if(kmsMasterKeyID.compare("") != 0) {
-    throw RGWXMLDecoder::err("implementation for KMS is not supported yet");
-  }
   RGWXMLDecoder::decode_xml("SSEAlgorithm", sseAlgorithm, obj, false);
-  if (sseAlgorithm.compare("AES256") != 0) {
-    throw RGWXMLDecoder::err("sse algorithm value can only be AES256");
-  }
 }
 
 void ApplyServerSideEncryptionByDefault::dump_xml(Formatter *f) const {
@@ -38,4 +32,3 @@ void RGWBucketEncryptionConfig::decode_xml(XMLObj *obj) {
 void RGWBucketEncryptionConfig::dump_xml(Formatter *f) const {
   encode_xml("Rule", rule, f);
 }
-
